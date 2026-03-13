@@ -6,8 +6,17 @@ main.py - CLI 인터페이스 및 메인 루프 모듈
 프로그램 종료 없이 에러 메시지를 출력한 뒤 메뉴로 복귀한다.
 """
 
+import os
+import platform
 from models import TaskError
 from manager import TaskManager
+
+def clear_screen():
+    os.system("cls" if platform.system() == "Windows" else "clear")
+
+
+def pause():
+    input("\n  [Enter] 키를 눌러 메뉴로 돌아가기...")
 
 MENU_TEXT = """
 ========================================
@@ -74,6 +83,7 @@ def handle_add(mgr):
     task = mgr.add_task(title, priority, deadline)
     print("\n  태스크가 추가되었습니다.")
     print_task_row(task)
+    pause()
 
 
 def handle_update(mgr):
@@ -96,6 +106,7 @@ def handle_update(mgr):
     task = mgr.update_task(task_id, title=title, priority=priority, deadline=deadline)
     print("\n  태스크가 수정되었습니다.")
     print_task_row(task)
+    pause()
 
 
 def handle_delete(mgr):
@@ -112,10 +123,12 @@ def handle_delete(mgr):
     confirm = input("  정말 삭제하시겠습니까? (y/n): ").strip().lower()
     if confirm != "y":
         print("  삭제가 취소되었습니다.")
+        pause()
         return
 
     task = mgr.delete_task(task_id)
     print("\n  태스크 [{}] '{}'이(가) 삭제되었습니다.".format(task.id, task.title))
+    pause()
 
 
 def handle_toggle(mgr):
@@ -133,6 +146,7 @@ def handle_toggle(mgr):
     print("\n  태스크 [{}] 상태가 '{}'(으)로 변경되었습니다.".format(
         task.id, STATUS_LABEL.get(task.status, task.status)
     ))
+    pause()
 
 
 def handle_list_all(mgr):
@@ -144,6 +158,7 @@ def handle_list_all(mgr):
     """
     print("\n--- 전체 태스크 목록 ---")
     print_task_table(mgr.list_all())
+    pause()
 
 
 def handle_list_by_priority(mgr):
@@ -155,6 +170,7 @@ def handle_list_by_priority(mgr):
     """
     print("\n--- 우선순위별 태스크 목록 ---")
     print_task_table(mgr.list_by_priority())
+    pause()
 
 
 def handle_list_by_deadline(mgr):
@@ -168,6 +184,7 @@ def handle_list_by_deadline(mgr):
     items = mgr.list_by_deadline()
     if not items:
         print("\n  등록된 태스크가 없습니다.")
+        pause()
         return
     print()
     for task, is_overdue in items:
@@ -181,6 +198,7 @@ def handle_list_by_deadline(mgr):
             status=STATUS_LABEL.get(task.status, task.status),
         ))
     print()
+    pause()
 
 
 MENU_HANDLERS = {
@@ -217,6 +235,7 @@ def main():
 
     while True:
         try:
+            clear_screen()
             print(MENU_TEXT)
             choice = input("\n  메뉴 선택: ").strip()
 
@@ -227,12 +246,14 @@ def main():
             handler = MENU_HANDLERS.get(choice)
             if handler is None:
                 print("\n  [입력 오류] 올바른 메뉴 번호(0~7)를 입력해주세요.")
+                pause()
                 continue
 
             handler(mgr)
 
         except TaskError as e:
             print("\n  [오류] {}".format(e))
+            pause()
 
         except KeyboardInterrupt:
             print("\n\n  프로그램을 종료합니다. 감사합니다!")
@@ -240,6 +261,7 @@ def main():
 
         except Exception as e:
             print("\n  [시스템 오류] 예상치 못한 오류가 발생했습니다: {}".format(e))
+            pause()
 
 
 if __name__ == "__main__":
